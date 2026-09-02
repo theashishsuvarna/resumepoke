@@ -1,0 +1,124 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --cursor-x: 50vw;
+    --cursor-y: 50vh;
+  }
+
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: #fdf9ee;
+    color: #0a0a0a;
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    overflow-x: hidden;
+  }
+
+  /* Hide native cursor on desktop with fine pointer */
+  @media (pointer: fine) {
+    body {
+      cursor: none;
+    }
+    a, button, [data-cursor] {
+      cursor: none;
+    }
+  }
+
+  ::selection {
+    background-color: #ee1515;
+    color: #fdf9ee;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #fdf9ee;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #ee1515;
+    border-radius: 999px;
+    border: 2px solid #fdf9ee;
+  }
+}
+
+@layer components {
+  .paper-grain {
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(0,0,0,0.04) 1px, transparent 0);
+    background-size: 4px 4px;
+  }
+
+  .halftone {
+    background-image: radial-gradient(circle, rgba(0,0,0,0.15) 1px, transparent 1.5px);
+    background-size: 8px 8px;
+  }
+
+  .halftone-red {
+    background-image: radial-gradient(circle, rgba(238,21,21,0.25) 1.5px, transparent 2px);
+    background-size: 10px 10px;
+  }
+
+  .speed-lines {
+    background-image: repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 6px,
+      rgba(0,0,0,0.06) 6px,
+      rgba(0,0,0,0.06) 8px
+    );
+  }
+
+  .ink-border {
+    box-shadow: 4px 4px 0 #0a0a0a;
+  }
+
+  .ink-border-lg {
+    box-shadow: 8px 8px 0 #0a0a0a;
+  }
+
+  .text-stroke {
+    -webkit-text-stroke: 2px #0a0a0a;
+    color: transparent;
+  }
+
+  .text-stroke-cream {
+    -webkit-text-stroke: 2px #fdf9ee;
+    color: transparent;
+  }
+}
+
+@layer utilities {
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
