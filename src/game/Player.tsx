@@ -21,7 +21,7 @@ const PLAYER_SPEED = 8;
 const SPRINT_SPEED = 14;
 const JUMP_FORCE = 8;
 const GRAVITY = 20;
-const WORLD_BOUNDS = 70;
+const WORLD_BOUNDS = 80;
 
 export function Player({ controlsRef, onMove, onInteract, worldBounds = WORLD_BOUNDS }: Props) {
   const meshRef = useRef<THREE.Group>(null);
@@ -89,8 +89,6 @@ export function Player({ controlsRef, onMove, onInteract, worldBounds = WORLD_BO
     if (!mesh) return;
 
     const speed = c.sprint ? SPRINT_SPEED : PLAYER_SPEED;
-
-    // Movement relative to camera angle
     const moveX = c.move.x;
     const moveY = c.move.y;
     const len = Math.hypot(moveX, moveY);
@@ -109,49 +107,37 @@ export function Player({ controlsRef, onMove, onInteract, worldBounds = WORLD_BO
       velocity.current.z *= 0.85;
     }
 
-    // Jump
     if (c.jump && onGround.current) {
       velocity.current.y = JUMP_FORCE;
       onGround.current = false;
     }
-
-    // Gravity
     velocity.current.y -= GRAVITY * dt;
 
-    // Apply
     mesh.position.x += velocity.current.x * dt;
     mesh.position.z += velocity.current.z * dt;
     mesh.position.y += velocity.current.y * dt;
 
-    // Ground collision
     if (mesh.position.y <= PLAYER_HEIGHT) {
       mesh.position.y = PLAYER_HEIGHT;
       velocity.current.y = 0;
       onGround.current = true;
     }
 
-    // World bounds
     const b = worldBounds;
     mesh.position.x = THREE.MathUtils.clamp(mesh.position.x, -b, b);
     mesh.position.z = THREE.MathUtils.clamp(mesh.position.z, -b, b);
 
-    // Smooth rotation
     mesh.rotation.y = THREE.MathUtils.lerp(mesh.rotation.y, facing.current, 0.15);
 
-    // Walk animation
     const moving = Math.hypot(velocity.current.x, velocity.current.z);
     if (moving > 0.5) {
       setWalkPhase((p) => (p + dt * speed * 1.5) % (Math.PI * 2));
     }
 
-    // Camera follow
-    const targetPos = mesh.position;
-    camTarget.current.lerp(targetPos, 0.1);
-
+    camTarget.current.lerp(mesh.position, 0.1);
     const camX = camTarget.current.x + Math.sin(camAngle.current) * camDist.current;
     const camZ = camTarget.current.z + Math.cos(camAngle.current) * camDist.current;
     const camY = camTarget.current.y + camHeight.current;
-
     camera.position.lerp(new THREE.Vector3(camX, camY, camZ), 0.08);
     camera.lookAt(camTarget.current.x, camTarget.current.y + 1, camTarget.current.z);
 
@@ -160,53 +146,80 @@ export function Player({ controlsRef, onMove, onInteract, worldBounds = WORLD_BO
 
   return (
     <group ref={meshRef} position={[0, PLAYER_HEIGHT, 5]}>
-      {/* Body */}
+      {/* Backpack */}
+      <mesh castShadow position={[0, 0.15, -0.25]} rotation={[0.2, 0, 0]}>
+        <boxGeometry args={[0.45, 0.55, 0.25]} />
+        <meshStandardMaterial color="#2d6a4f" roughness={0.7} />
+      </mesh>
+      {/* Backpack strap */}
+      <mesh position={[0.22, 0.15, -0.12]}>
+        <boxGeometry args={[0.04, 0.5, 0.04]} />
+        <meshStandardMaterial color="#1a4a35" roughness={0.8} />
+      </mesh>
+      <mesh position={[-0.22, 0.15, -0.12]}>
+        <boxGeometry args={[0.04, 0.5, 0.04]} />
+        <meshStandardMaterial color="#1a4a35" roughness={0.8} />
+      </mesh>
+      {/* Body / jacket */}
       <mesh castShadow position={[0, 0, 0]}>
-        <capsuleGeometry args={[0.35, 0.6, 4, 8]} />
-        <meshStandardMaterial color="#ee1515" />
+        <capsuleGeometry args={[0.32, 0.55, 4, 8]} />
+        <meshStandardMaterial color="#1a4c7a" roughness={0.6} />
       </mesh>
       {/* Head */}
       <mesh castShadow position={[0, 0.65, 0]}>
-        <sphereGeometry args={[0.28, 16, 16]} />
-        <meshStandardMaterial color="#fdd9b5" />
+        <sphereGeometry args={[0.26, 16, 16]} />
+        <meshStandardMaterial color="#e8c4a0" roughness={0.5} />
       </mesh>
-      {/* Hat brim */}
-      <mesh castShadow position={[0, 0.82, 0.05]} rotation={[0.1, 0, 0]}>
-        <cylinderGeometry args={[0.45, 0.45, 0.05, 16]} />
-        <meshStandardMaterial color="#ee1515" />
+      {/* Hair */}
+      <mesh castShadow position={[0, 0.78, -0.02]} rotation={[0.1, 0, 0]}>
+        <sphereGeometry args={[0.27, 16, 16, 0, Math.PI * 2, 0, Math.PI * 0.55]} />
+        <meshStandardMaterial color="#2a1a0a" roughness={0.8} />
       </mesh>
-      {/* Hat cap */}
-      <mesh castShadow position={[0, 0.9, 0]}>
-        <sphereGeometry args={[0.3, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
-        <meshStandardMaterial color="#ee1515" />
+      {/* Headphones */}
+      <mesh castShadow position={[0.24, 0.68, 0]}>
+        <boxGeometry args={[0.08, 0.12, 0.08]} />
+        <meshStandardMaterial color="#1a1a2e" roughness={0.4} metalness={0.5} />
       </mesh>
-      {/* Hat front panel */}
-      <mesh position={[0, 0.88, 0.22]}>
-        <boxGeometry args={[0.2, 0.12, 0.1]} />
-        <meshStandardMaterial color="#3b9e5f" />
+      <mesh castShadow position={[-0.24, 0.68, 0]}>
+        <boxGeometry args={[0.08, 0.12, 0.08]} />
+        <meshStandardMaterial color="#1a1a2e" roughness={0.4} metalness={0.5} />
+      </mesh>
+      {/* Headphone band */}
+      <mesh position={[0, 0.82, 0]} rotation={[Math.PI / 2, 0, 0]}>
+        <torusGeometry args={[0.22, 0.025, 6, 12, Math.PI]} />
+        <meshStandardMaterial color="#1a1a2e" roughness={0.4} metalness={0.5} />
       </mesh>
       {/* Arms */}
-      <mesh castShadow position={[0.4, 0.1, 0]} rotation={[0, 0, -0.3 + Math.sin(walkPhase) * 0.4]}>
-        <capsuleGeometry args={[0.12, 0.4, 4, 6]} />
-        <meshStandardMaterial color="#fdd9b5" />
+      <mesh castShadow position={[0.38, 0.1, 0]} rotation={[0, 0, -0.3 + Math.sin(walkPhase) * 0.4]}>
+        <capsuleGeometry args={[0.1, 0.35, 4, 6]} />
+        <meshStandardMaterial color="#1a4c7a" roughness={0.6} />
       </mesh>
-      <mesh castShadow position={[-0.4, 0.1, 0]} rotation={[0, 0, 0.3 - Math.sin(walkPhase) * 0.4]}>
-        <capsuleGeometry args={[0.12, 0.4, 4, 6]} />
-        <meshStandardMaterial color="#fdd9b5" />
+      <mesh castShadow position={[-0.38, 0.1, 0]} rotation={[0, 0, 0.3 - Math.sin(walkPhase) * 0.4]}>
+        <capsuleGeometry args={[0.1, 0.35, 4, 6]} />
+        <meshStandardMaterial color="#1a4c7a" roughness={0.6} />
       </mesh>
       {/* Legs */}
-      <mesh castShadow position={[0.18, -0.55, 0]} rotation={[Math.sin(walkPhase) * 0.5, 0, 0]}>
-        <capsuleGeometry args={[0.14, 0.35, 4, 6]} />
-        <meshStandardMaterial color="#1a1a2e" />
+      <mesh castShadow position={[0.16, -0.55, 0]} rotation={[Math.sin(walkPhase) * 0.5, 0, 0]}>
+        <capsuleGeometry args={[0.13, 0.3, 4, 6]} />
+        <meshStandardMaterial color="#2a2a3e" roughness={0.7} />
       </mesh>
-      <mesh castShadow position={[-0.18, -0.55, 0]} rotation={[-Math.sin(walkPhase) * 0.5, 0, 0]}>
-        <capsuleGeometry args={[0.14, 0.35, 4, 6]} />
-        <meshStandardMaterial color="#1a1a2e" />
+      <mesh castShadow position={[-0.16, -0.55, 0]} rotation={[-Math.sin(walkPhase) * 0.5, 0, 0]}>
+        <capsuleGeometry args={[0.13, 0.3, 4, 6]} />
+        <meshStandardMaterial color="#2a2a3e" roughness={0.7} />
+      </mesh>
+      {/* Boots */}
+      <mesh castShadow position={[0.16, -0.85, 0.05]} rotation={[Math.sin(walkPhase) * 0.5, 0, 0]}>
+        <boxGeometry args={[0.18, 0.12, 0.28]} />
+        <meshStandardMaterial color="#1a1a1a" roughness={0.5} />
+      </mesh>
+      <mesh castShadow position={[-0.16, -0.85, 0.05]} rotation={[-Math.sin(walkPhase) * 0.5, 0, 0]}>
+        <boxGeometry args={[0.18, 0.12, 0.28]} />
+        <meshStandardMaterial color="#1a1a1a" roughness={0.5} />
       </mesh>
       {/* Shadow blob */}
       <mesh position={[0, -1.15, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <circleGeometry args={[0.4, 16]} />
-        <meshBasicMaterial color="#000000" opacity={0.15} transparent />
+        <circleGeometry args={[0.45, 16]} />
+        <meshBasicMaterial color="#000000" opacity={0.12} transparent />
       </mesh>
     </group>
   );

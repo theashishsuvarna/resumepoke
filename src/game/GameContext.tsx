@@ -21,6 +21,8 @@ type GameState = {
   fastTravel: (id: RegionId) => void;
   fastTravelTarget: RegionId | null;
   clearFastTravel: () => void;
+  lastDiscovered: RegionId | null;
+  clearLastDiscovered: () => void;
 };
 
 export type InteractableInfo = {
@@ -42,12 +44,14 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [accessibleMode, setAccessibleMode] = useState(false);
   const [fastTravelTarget, setFastTravelTarget] = useState<RegionId | null>(null);
+  const [lastDiscovered, setLastDiscovered] = useState<RegionId | null>(null);
 
   const discoverRegion = useCallback((id: RegionId) => {
     setDiscovered((prev) => {
       if (prev.has(id)) return prev;
       const next = new Set(prev);
       next.add(id);
+      setLastDiscovered(id);
       return next;
     });
   }, []);
@@ -73,6 +77,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
     setFastTravelTarget(null);
   }, []);
 
+  const clearLastDiscovered = useCallback(() => {
+    setLastDiscovered(null);
+  }, []);
+
   return (
     <GameContext.Provider
       value={{
@@ -95,6 +103,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
         fastTravel,
         fastTravelTarget,
         clearFastTravel,
+        lastDiscovered,
+        clearLastDiscovered,
       }}
     >
       {children}

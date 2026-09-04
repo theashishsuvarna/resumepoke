@@ -1,16 +1,26 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Map, Award, Settings, X, Compass, Volume2, VolumeX } from 'lucide-react';
-import { useState } from 'react';
+import { Map, Award, Settings, X, Compass, Volume2, VolumeX, Sparkles } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { useGame } from './GameContext';
 import { REGIONS, type RegionId } from './gameData';
 
 export function HUD() {
-  const { currentRegion, discovered, badges, paused, setPaused, fastTravel, setAccessibleMode } = useGame();
+  const { currentRegion, discovered, badges, paused, setPaused, fastTravel, setAccessibleMode, lastDiscovered, clearLastDiscovered } = useGame();
   const [mapOpen, setMapOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [muted, setMuted] = useState(false);
 
   const region = REGIONS.find((r) => r.id === currentRegion);
+
+  // Discovery notification
+  useEffect(() => {
+    if (lastDiscovered) {
+      const t = setTimeout(() => clearLastDiscovered(), 3500);
+      return () => clearTimeout(t);
+    }
+  }, [lastDiscovered, clearLastDiscovered]);
+
+  const discoveredRegion = lastDiscovered ? REGIONS.find((r) => r.id === lastDiscovered) : null;
 
   return (
     <>
@@ -57,6 +67,27 @@ export function HUD() {
       </div>
 
       <InteractPrompt />
+
+      {/* Discovery notification */}
+      <AnimatePresence>
+        {discoveredRegion && (
+          <motion.div
+            initial={{ opacity: 0, y: -30, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -30, scale: 0.9 }}
+            className="fixed top-1/4 left-1/2 -translate-x-1/2 z-[120] pointer-events-none"
+          >
+            <div className="flex items-center gap-3 px-6 py-4 rounded-2xl bg-black/50 backdrop-blur-xl border border-white/20 shadow-2xl">
+              <Sparkles className="w-6 h-6" style={{ color: discoveredRegion.color }} />
+              <div className="text-center">
+                <div className="text-xs font-mono font-bold tracking-widest text-white/50">DISCOVERED</div>
+                <div className="text-lg font-bold text-white">{discoveredRegion.name}</div>
+                <div className="text-[10px] font-mono text-white/40">{discoveredRegion.subtitle}</div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {mapOpen && (
