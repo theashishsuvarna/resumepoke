@@ -1,3 +1,3 @@
-# resumepoke
+# Ashish Suvarna — 3D Adventure Portfolio
 
-[![Open in Bolt](https://bolt.new/static/open-in-bolt.svg)](https://bolt.new/~/sb1-6muyjcwk)
+An immersive 3D open-world adventure portfolio. Explore a connected world of villages, forests, rivers, cities, gyms, mountains, and a final summit to discover projects, skills, certifications, and the trainer profile.
